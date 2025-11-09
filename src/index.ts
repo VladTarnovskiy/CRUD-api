@@ -16,6 +16,7 @@ const server = createServer((req, res) => {
         userService.postRequest(req, res);
         break;
       case "PUT":
+        userService.putRequest(req, res);
         break;
       case "DELETE":
         break;
