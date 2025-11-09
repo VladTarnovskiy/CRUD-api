@@ -14,7 +14,8 @@ import { parseResponse } from "../utils/response";
 import { createUsers } from "../data/createUser";
 import { generateUserID } from "../utils/userId";
 import { isReqDataValid } from "../utils/isReqDataValid";
-import { updateUsers } from "../utils/updateUser";
+import { updateUsers } from "../data/updateUser";
+import { deleteUser } from "../data/deleteUser";
 
 export class UserService {
   public getData = async (
@@ -26,7 +27,7 @@ export class UserService {
 
     if (req.url === API_URL) {
       parseResponse(200, currentData, res);
-    } else if (req.url?.startsWith(API_URL) && idParam) {
+    } else if (idParam) {
       const filteredData = currentData.filter(
         (user: IUser) => user.id === idParam
       );
@@ -71,7 +72,7 @@ export class UserService {
     const idParam = getUrlIdParam(req.url!);
     const currentData = await getCurrentData();
 
-    if (req.url?.startsWith(API_URL) && idParam) {
+    if (idParam) {
       const filteredData = currentData.filter(
         (user: IUser) => user.id === idParam
       );
@@ -88,6 +89,32 @@ export class UserService {
         }
       } else {
         parseResponse(404, dataError, res);
+      }
+    } else {
+      parseResponse(404, requestError, res);
+    }
+  };
+
+  public deleteRequest = async (
+    req: IncomingMessage,
+    res: ServerResponse<IncomingMessage>
+  ) => {
+    const idParam = getUrlIdParam(req.url!);
+    const currentData = await getCurrentData();
+
+    if (idParam) {
+      const userToDelete = currentData.find(
+        (user: IUser) => user.id !== idParam
+      );
+      if (validate(idParam))
+        if (userToDelete) {
+          deleteUser(idParam);
+          parseResponse(204, userToDelete, res);
+        } else {
+          parseResponse(404, existUserError, res);
+        }
+      else {
+        parseResponse(400, idError, res);
       }
     } else {
       parseResponse(404, requestError, res);
