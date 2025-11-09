@@ -2,9 +2,18 @@ import { IncomingMessage, ServerResponse } from "http";
 import { validate } from "uuid";
 import { getCurrentData } from "../data/getCurrentData";
 import { IUser } from "../model";
-import { API_URL, idError, existUserError, requestError } from "../constant";
-import { getUrlIdParam } from "../utils/parseData";
+import {
+  API_URL,
+  idError,
+  existUserError,
+  requestError,
+  dataError,
+} from "../constant";
+import { getUrlIdParam, parseData } from "../utils/parseData";
 import { parseResponse } from "../utils/response";
+import { createUsers } from "../data/createUser";
+import { generateUserID } from "../utils/userId";
+import { isReqDataValid } from "../utils/isReqDataValid";
 
 export class UserService {
   public getData = async (
@@ -29,6 +38,28 @@ export class UserService {
       }
     } else {
       parseResponse(404, requestError, res);
+    }
+  };
+
+  public postRequest = async (
+    req: IncomingMessage,
+    res: ServerResponse<IncomingMessage>
+  ) => {
+    try {
+      if (req.url === API_URL) {
+        const userData: any = await parseData(req);
+        if (isReqDataValid(userData)) {
+          userData.id = generateUserID();
+          createUsers(userData);
+          parseResponse(200, userData, res);
+        } else {
+          parseResponse(404, dataError, res);
+        }
+      } else {
+        parseResponse(404, requestError, res);
+      }
+    } catch {
+      throw new Error();
     }
   };
 }

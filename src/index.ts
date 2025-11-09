@@ -13,6 +13,7 @@ const server = createServer((req, res) => {
         userService.getData(req, res);
         break;
       case "POST":
+        userService.postRequest(req, res);
         break;
       case "PUT":
         break;
